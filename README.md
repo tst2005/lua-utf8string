@@ -9,18 +9,31 @@ Current Status
 The module emulate the string capabilities
 
 | ok      | string.byte   |
+
 | ok      | string.char   |
+
 | ok      | string.dump   |
+
 | missing | string.find   |
+
 | ok      | string.format |
+
 | missing | string.gmatch |
+
 | missing | string.gsub   |
+
 | ok      | string.len    |
+
 | ok      | string.lower  | (*)
+
 | missing | string.match  |
+
 | ok      | string.rep    |
+
 | ok      | string.reverse |
+
 | ok      | string.sub    |
+
 | ok      | string.upper  | (*)
 
 (*) don't thread Unicode, only ascii upper/lower cases.
