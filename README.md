@@ -8,33 +8,20 @@ Current Status
 
 The module emulate the string capabilities
 
-| ok      | string.byte   |
-
-| ok      | string.char   |
-
-| ok      | string.dump   |
-
-| missing | string.find   |
-
-| ok      | string.format |
-
-| missing | string.gmatch |
-
-| missing | string.gsub   |
-
-| ok      | string.len    |
-
-| ok      | string.lower  | (*)
-
-| missing | string.match  |
-
-| ok      | string.rep    |
-
-| ok      | string.reverse |
-
-| ok      | string.sub    |
-
-| ok      | string.upper  | (*)
+* ok      `string.byte`
+* ok      `string.char`
+* ok      `string.dump`
+* missing `string.find`
+* ok      `string.format`
+* missing `string.gmatch`
+* missing `string.gsub`
+* ok      `string.len`
+* ok      `string.lower` (*)
+* missing `string.match`
+* ok      `string.rep`
+* ok      `string.reverse`
+* ok      `string.sub`
+* ok      `string.upper` (*)
 
 (*) don't thread Unicode, only ascii upper/lower cases.
 
@@ -42,17 +29,17 @@ The module emulate the string capabilities
 Sample of use
 =============
 
-local data = "àbcdéêèf"
+`code>local data = "àbcdéêèf"`
 
-local u = require("utf8")
+`local u = require("utf8")`
 
-local udata = u(data)
+`local udata = u(data)`
 
-print(type(data), data)   -- the orignal
-print(type(udata), udata) -- automatic convertion to string
+`print(type(data), data)`   -- the orignal
+`print(type(udata), udata)` -- automatic convertion to string
 
-print(#data)  -- is not the good number of printed characters on screen
-print(#udata) -- is the number of printed characters on screen
+`print(#data)`  -- is not the good number of printed characters on screen
+`print(#udata)` -- is the number of printed characters on screen
 
-print(udata:sub(4,5)) -- be able to use the sub() like a string
+`print(udata:sub(4,5))` -- be able to use the sub() like a string
 
