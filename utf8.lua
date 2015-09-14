@@ -75,10 +75,10 @@ local function utf8_tostring(obj)
 	return tostring(obj)
 end
 
-
 local function utf8_op_concat(op1, op2)
-	local op1 = utf8_is_object(op1) and utf8_tostring(op1) or op1
-	local op2 = utf8_is_object(op2) and utf8_tostring(op2) or op2
+	if utf8_is_object(op1) then op1 = utf8_tostring(op1) end
+	if utf8_is_object(op2) then op2 = utf8_tostring(op2) end
+
 	if (typeof(op1) == "string" or typeof(op1) == "number") and
 	   (typeof(op2) == "string" or typeof(op2) == "number") then
 		return op1 .. op2  -- primitive string concatenation
@@ -87,7 +87,7 @@ local function utf8_op_concat(op1, op2)
 	if h then
 		return h(op1, op2)
 	end
-	error("concat error")
+	error("concat error", 2)
 end
 
 --local function utf8_is_uchar(uchar)
@@ -152,11 +152,31 @@ local function utf8_lower(uobj) return utf8_auto_convert( tostring(uobj):lower()
 local function utf8_upper(uobj) return utf8_auto_convert( tostring(uobj):upper() ) end
 
 local function utf8_reverse(uobj)
+	local o = {}
 	local t = {}
+	local N = 0
 	for i=#uobj,1,-1 do
-		t[#t+1] = uobj[i]
+		N = N+1
+		t[#t+1] = uobj:sub(i,i)
+		o[#o+1] = t[N-1] + uobj[i] - uobj[i-1]
+
+--[[
+		a BB CCC D EEE F
+		1  3   6 7  10 11
+
+		F EEE D CCC BB A
+		1   4 5
+		|   | [N-1] + size
+		|   |   4   + [i] - [i-1]
+		|   |   4   +  7  -  6
+		|   [N-1]+  [i]-[i-1]
+		|   1    +   10 -  7
+		|   1    +   3
+		11-11+1
+]]--
 	end
-	return utf8_object(t)
+	o.orig = table_concat(t, "")
+	return utf8_object(o)
 end
 local function utf8_rep(uobj, n)
 	return utf8_auto_convert(tostring(uobj):rep(n)) -- :rep() is the string.rep()
@@ -194,10 +214,9 @@ ustring.reverse	= assert(utf8_reverse)
 ustring.sub	= assert(utf8_sub)
 ustring.upper	= assert(utf8_upper)
 
-ustring.tostring = assert(utf8_tostring)
-
 ---- custome add-on ----
 ustring.type	= assert(utf8_typeof)
+ustring.tostring = assert(utf8_tostring)
 
 -- Add fonctions to the module
 for k,v in pairs(ustring) do m[k] = v end

@@ -22,6 +22,8 @@ assert(string.len(tostring(u("Ô"))) == #"Ô")
 assert(uobj == u(uobj), "convert must detecte an already converted object")
 assert( tostring( u("áà"):rep(3) ) == "áàáàáà")
 
+--assert( tostring( u("àeïôú"):reverse() ) == "úôïeà")
+print(  u("àeïôú"):reverse() )
 assert(#ustr == 26)
 assert(#uobj == 15)
 
