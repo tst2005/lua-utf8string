@@ -71,7 +71,6 @@ end
 local function utf8_tostring(obj)
 	if utf8_is_object(obj) then
 		return obj.orig
-		--return table_concat(obj, "")
 	end
 	return tostring(obj)
 end
@@ -103,41 +102,21 @@ end
 --      \128 = 0x80
 --      \191 = 0xBF
 
---[[
 -- parse a lua string to split each UTF-8 sequence to separated table item
 local function private_string2ustring(unicode_string)
 	assert(typeof(unicode_string) == "string", "unicode_string is not a string?!")
 
-	local uobj = utf8_object()
-	local cnt = 1
--- FIXME: invalid sequence dropped ?!
-	for uchar in sgmatch(unicode_string, "([%z\1-\127\194-\244][\128-\191]*)") do
-		uobj[cnt] = uchar
-		cnt = cnt + 1
-	end
-	return uobj
-end
-]]--
-
-
--- parse a lua string to split each UTF-8 sequence to separated table item
-local function private_string2ustring(unicode_string)
-	assert(typeof(unicode_string) == "string", "unicode_string is not a string?!")
-
-	local cnt = 1
-	local n = 0
-	local t = {}
-	local function search(s)
+	local e = 0 -- end of found string
+	local o = {}
+	while true do
 		-- FIXME: invalid sequence dropped ?!
-		local b, e = string_find(s, "[%z\1-\127\194-\244][\128-\191]*", n+1)
-		if not b then return false end
-		t[#t+1] = e
-		n = e
-		return true
+		local b
+		b, e = string_find(unicode_string, "[%z\1-\127\194-\244][\128-\191]*", e+1)
+		if not b then break end
+		o[#o+1] = e
 	end
-	while search(unicode_string) do end
-	t.orig = unicode_string
-	return utf8_object(t)
+	o.orig = unicode_string
+	return utf8_object(o)
 end
 
 local function private_contains_unicode(str)
@@ -157,7 +136,7 @@ end
 
 local function utf8_byte(obj, i, j)
 	local i = i or 1
-	local j = j or i
+	local j = j or i -- FIXME: 'or i' or 'or -1' ?
 	local uobj
 	assert(utf8_is_object(obj), "ask utf8_byte() for a non utf8 object?!")
 --	if not utf8_is_object(obj) then
@@ -214,6 +193,8 @@ ustring.rep	= assert(utf8_rep)
 ustring.reverse	= assert(utf8_reverse)
 ustring.sub	= assert(utf8_sub)
 ustring.upper	= assert(utf8_upper)
+
+ustring.tostring = assert(utf8_tostring)
 
 ---- custome add-on ----
 ustring.type	= assert(utf8_typeof)
