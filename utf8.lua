@@ -24,32 +24,39 @@ local typeof = assert(type)
 
 local string = require("string")
 local sgmatch = assert(string.gmatch or string.gfind) -- lua 5.1+ or 5.0
+local string_find = assert(string.find)
+local string_sub = assert(string.sub)
 local string_byte = assert(string.byte)
 
-local table = require("table")
-local table_concat = assert(table.concat)
+local utf8_object
 
-local function table_sub(t, i, j)
-	local len = #t
-	if not i or i == 0 then
+local function utf8_sub(uobj, i, j)
+        assert(i, "bad argument #2 to 'sub' (number expected, got no value)")
+
+	if i == 0 then
 		i = 1
-	elseif i < 0 then -- support negative index
-		i = len+i+1
+	elseif i < 0 then
+		i = #uobj+i+1
 	end
-	if not j then
-		j = i
-	elseif j < 0 then
-		j = len+j+1
+
+	if j and j < 0 then
+		j = #uobj+j+1
 	end
-	local r = {}
-	for k=i,j,1 do
-		r[#r+1] = t[k]
+
+	local b = i <= 1 and 1 or uobj[i-1]+1
+	local e = j and uobj[j]
+
+	-- create an new utf8 object from the original one (do not "parse" it again)
+	local new = {}
+	for x=i,j,1 do
+		new[#new+1] = uobj[x]
 	end
-	return r
-end
-local function utf8_range(uobj, i, j)
-	local t = table_sub(uobj, i, j)
-	return setmetatable(t, getmetatable(uobj)) -- or utf8_object() 
+	new.orig = string_sub(uobj.orig, b, e)
+	return utf8_object(new)
+
+	-- just return the substring
+	--local s = string_sub(uobj.orig, b, e)
+	--return s
 end
 
 local function utf8_typeof(obj)
@@ -63,15 +70,12 @@ end
 
 local function utf8_tostring(obj)
 	if utf8_is_object(obj) then
-		return table_concat(obj, "")
+		return obj.orig
+		--return table_concat(obj, "")
 	end
 	return tostring(obj)
 end
 
-local function utf8_sub(uobj, i, j)
-        assert(i, "sub: i must exists")
-	return utf8_range(uobj, i, j)
-end
 
 local function utf8_op_concat(op1, op2)
 	local op1 = utf8_is_object(op1) and utf8_tostring(op1) or op1
@@ -93,25 +97,13 @@ end
 
 
 
-local function utf8_object(uobj)
-	local uobj = uobj or {}
--- IDEA: create __index to return function without to be indexe directly as a key
-	for k,v in pairs(ustring) do
-		uobj[k] = v
-	end
-	local mt = getmetatable(uobj) or {}
-	mt.__concat   = utf8_op_concat
-	mt.__tostring = utf8_tostring
-	mt.__type     = utf8type
-	return setmetatable(uobj, mt)
-end
-
 --        %z = 0x00 (\0 not allowed)
 --        \1 = 0x01
 --      \127 = 0x7F
 --      \128 = 0x80
 --      \191 = 0xBF
 
+--[[
 -- parse a lua string to split each UTF-8 sequence to separated table item
 local function private_string2ustring(unicode_string)
 	assert(typeof(unicode_string) == "string", "unicode_string is not a string?!")
@@ -124,6 +116,28 @@ local function private_string2ustring(unicode_string)
 		cnt = cnt + 1
 	end
 	return uobj
+end
+]]--
+
+
+-- parse a lua string to split each UTF-8 sequence to separated table item
+local function private_string2ustring(unicode_string)
+	assert(typeof(unicode_string) == "string", "unicode_string is not a string?!")
+
+	local cnt = 1
+	local n = 0
+	local t = {}
+	local function search(s)
+		-- FIXME: invalid sequence dropped ?!
+		local b, e = string_find(s, "[%z\1-\127\194-\244][\128-\191]*", n+1)
+		if not b then return false end
+		t[#t+1] = e
+		n = e
+		return true
+	end
+	while search(unicode_string) do end
+	t.orig = unicode_string
+	return utf8_object(t)
 end
 
 local function private_contains_unicode(str)
@@ -169,6 +183,22 @@ local function utf8_rep(uobj, n)
 	return utf8_auto_convert(tostring(uobj):rep(n)) -- :rep() is the string.rep()
 end
 
+function utf8_object(uobj)
+	local mt
+	if not uobj then
+		uobj = {}
+		mt = {}
+	else
+		mt = getmetatable(uobj) or {}
+	end
+	mt.__index = assert(ustring)
+	mt.__concat   = assert(utf8_op_concat)
+	mt.__tostring = assert(utf8_tostring)
+	mt.__type     = assert(utf8type)
+	return setmetatable(uobj, mt)
+end
+
+
 ---- Standard Lua 5.1 string.* ----
 ustring.byte	= assert(utf8_byte)
 ustring.char	= assert(string.char)
@@ -193,7 +223,7 @@ for k,v in pairs(ustring) do m[k] = v end
 
 -- Allow to use the module directly to convert strings
 local mt = {
-	__call = function(self, obj, i, j)
+	__call = function(_self, obj, i, j)
 		if utf8_is_object(obj) then
 			return (i and obj:sub(i,j)) or obj
 		end
