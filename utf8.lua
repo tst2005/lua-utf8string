@@ -133,6 +133,58 @@ local function utf8_op_concat(obj1, obj2)
 	return utf8_auto_convert( tostring(obj1) .. tostring(obj2) )
 end
 
+local floor = table.floor
+local string_char = utf8_char
+local table_concat = table.concat
+
+-- http://en.wikipedia.org/wiki/Utf8
+-- http://developer.coronalabs.com/code/utf-8-conversion-utility
+local function utf8_onechar(unicode)
+        if unicode <= 0x7F then return string_char(unicode) end
+
+        if (unicode <= 0x7FF) then
+                local Byte0 = 0xC0 + floor(unicode / 0x40)
+                local Byte1 = 0x80 + (unicode % 0x40)
+                return string_char(Byte0, Byte1)
+        end
+
+        if (unicode <= 0xFFFF) then
+                local Byte0 = 0xE0 +  floor(unicode / 0x1000) -- 0x1000 = 0x40 * 0x40
+                local Byte1 = 0x80 + (floor(unicode / 0x40) % 0x40)
+                local Byte2 = 0x80 + (unicode % 0x40)
+                return string_char(Byte0, Byte1, Byte2)
+        end
+
+        if (unicode <= 0x10FFFF) then
+                local code = unicode
+                local Byte3= 0x80 + (code % 0x40)
+                code       = floor(code / 0x40)
+                local Byte2= 0x80 + (code % 0x40)
+                code       = floor(code / 0x40)
+                local Byte1= 0x80 + (code % 0x40)
+                code       = floor(code / 0x40)
+                local Byte0= 0xF0 + code
+
+                return string_char(Byte0, Byte1, Byte2, Byte3)
+        end
+
+        error('Unicode cannot be greater than U+10FFFF!', 3)
+end
+
+
+local function utf8_char(...)
+        local r = {}
+        for i,v in ipairs({...}) do
+                if type(v) ~= "number" then
+                        error("bad argument #"..i.." to 'char' (number expected, got "..type(v)..")", 2)
+                end
+                r[i] = utf8_onechar(v)
+        end
+        return table_concat(r, "")
+end
+--for _, n in ipairs{12399, 21560, 12356, 12414, 12377} do print(utf8char(n)) end
+--print( lua53_utf8_char( 12399, 21560, 12356, 12414, 12377 ) )
+
 
 local function utf8_byte(obj, i, j)
 	local i = i or 1
@@ -205,7 +257,7 @@ end
 
 ---- Standard Lua 5.1 string.* ----
 ustring.byte	= assert(utf8_byte)
-ustring.char	= assert(string.char)
+ustring.char	= assert(utf8_char)
 ustring.dump	= assert(string.dump)
 --ustring.find
 ustring.format	= assert(string.format)
