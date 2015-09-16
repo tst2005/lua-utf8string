@@ -1,27 +1,14 @@
 local m = {} -- the module
+
 local ustring = {} -- table to index equivalent string.* functions
 
--- TsT <tst2005 gmail com> 20121108 (v0.2.1)
+-- TsT <tst2005@gmail.com> 20150916 (v0.3)
 -- License: same to the Lua one
 -- TODO: copy the LICENSE file
 
--------------------------------------------------------------------------------
--- begin of the idea : http://lua-users.org/wiki/LuaUnicode
---
--- for uchar in sgmatch(unicode_string, "([%z\1-\127\194-\244][\128-\191]*)") do
---
---local function utf8_strlen(unicode_string)
---	local _, count = string.gsub(unicode_string, "[^\128-\193]", "")
---	return count
---end
-
--- http://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries
-
---[[
-	uobj.rawstring	=> contains the original string
-	uobj		=> is a table, each item contains the end of the unicode
-			!!!!!! utiliser la taille !
-]]--
+m._VERSION	= "lua-utf8 0.3"
+m._URL		= "https://github.com/tst2005/lua-utf8"
+m._LICENSE	= 'MIT <http://opensource.org/licenses/MIT>'
 
 -- my custom type for Unicode String
 local utf8type = "ustring"
@@ -99,8 +86,6 @@ end
 --	return (uchar:len() > 1) -- len() = string.len()
 --end
 
-
-
 --        %z = 0x00 (\0 not allowed)
 --        \1 = 0x01
 --      \127 = 0x7F
@@ -114,7 +99,7 @@ local function private_string2ustring(unicode_string)
 	local e = 0 -- end of found string
 	local o = {}
 	while true do
-		-- FIXME: invalid sequence dropped ?!
+		-- FIXME: how to drop invalid sequence ?!
 		local b
 		b, e = string_find(unicode_string, "[%z\1-\127\194-\244][\128-\191]*", e+1)
 		if not b then break end
@@ -167,6 +152,7 @@ end
 local function utf8_lower(uobj) return utf8_auto_convert( tostring(uobj):lower() ) end
 local function utf8_upper(uobj) return utf8_auto_convert( tostring(uobj):upper() ) end
 
+-- FIXME: use the already parsed info to generate the reverse info...
 local function utf8_reverse(uobj)
 	if uobj.usestring then
 		return utf8_auto_convert(uobj.rawstring:reverse())
@@ -185,9 +171,9 @@ local function utf8_reverse(uobj)
 	end
 	tmp[#tmp+1] = string_sub(rawstring, 1, e)
 --	o[#o+1] = last_value
-	return utf8_auto_convert(table_concat(tmp, ""))
 --	o.rawstring = table_concat(tmp, "")
 --	return utf8_object(o)
+	return utf8_auto_convert(table_concat(tmp, ""))
 end
 
 
@@ -257,3 +243,14 @@ local mt = {
 }
 
 return setmetatable(m,mt)
+
+-------------------------------------------------------------------------------
+-- begin of the idea : http://lua-users.org/wiki/LuaUnicode
+--
+-- for uchar in sgmatch(unicode_string, "([%z\1-\127\194-\244][\128-\191]*)") do
+--
+--local function utf8_strlen(unicode_string)
+--	local _, count = string.gsub(unicode_string, "[^\128-\193]", "")
+--	return count
+--end
+-- http://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries
