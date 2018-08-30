@@ -1,4 +1,4 @@
-local u = require("utf8")
+local u = require("utf8string")
 
 -- source: https://github.com/cloudwu/skynet/issues/341
 local i341 = '这里只是释放了 uc 的内存, 但是 uc->pack.buffer 指向的数据并没有释放.'

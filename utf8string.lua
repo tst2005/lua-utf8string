@@ -5,8 +5,8 @@ local ustring = {} -- table to index equivalent string.* functions
 -- TsT <tst2005@gmail.com>
 -- License: MIT
 
-m._VERSION	= "lua-utf8 0.3.1"
-m._URL		= "https://github.com/tst2005/lua-utf8"
+m._VERSION	= "utf8string 1.0.0"
+m._URL		= "https://github.com/tst2005/lua-utf8string"
 m._LICENSE	= 'MIT <http://opensource.org/licenses/MIT>'
 
 -- my custom type for Unicode String
