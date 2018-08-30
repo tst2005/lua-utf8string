@@ -1,7 +1,7 @@
-lua-utf8
-========
+lua-utf8string
+==============
 
-Lua UTF8 support in pure lua script
+Simple UTF8 support in pure lua
 
 Current Status
 ==============
@@ -30,7 +30,7 @@ Sample of use
 =============
 
 ```lua 
-local u = require("utf8")
+local u = require("utf8string")
 
 local data = "àbcdéêèf"
 local udata = u(data)
