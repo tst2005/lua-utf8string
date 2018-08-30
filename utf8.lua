@@ -2,11 +2,10 @@ local m = {} -- the module
 
 local ustring = {} -- table to index equivalent string.* functions
 
--- TsT <tst2005@gmail.com> 20150916 (v0.3)
--- License: same to the Lua one
--- TODO: copy the LICENSE file
+-- TsT <tst2005@gmail.com>
+-- License: MIT
 
-m._VERSION	= "lua-utf8 0.3"
+m._VERSION	= "lua-utf8 0.3.1"
 m._URL		= "https://github.com/tst2005/lua-utf8"
 m._LICENSE	= 'MIT <http://opensource.org/licenses/MIT>'
 
