@@ -133,7 +133,7 @@ local function utf8_op_concat(obj1, obj2)
 end
 
 local floor = table.floor
-local string_char = utf8_char
+local string_char = string.char
 local table_concat = table.concat
 
 -- http://en.wikipedia.org/wiki/Utf8
